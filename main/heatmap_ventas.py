@@ -1,4 +1,3 @@
-from . import kpi_engine
 
 # Importa directamente cada archivo (módulo)
 import pandas as pd
@@ -11,7 +10,6 @@ from unidecode import unidecode
 
 from . import main_comparativo
 from . import kpi_engine
-import kpi_engine
 import schema_maper      # Recomendación: Renombra tu archivo a schema_mapper.py
 
 # ... aquí irían el resto de tus importaciones
