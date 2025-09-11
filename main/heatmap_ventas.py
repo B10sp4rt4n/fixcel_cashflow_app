@@ -9,6 +9,7 @@ from unidecode import unidecode
 from . import main_comparativo
 from . import kpi_engine
 from . import schema_maper 
+from  .import main_kpi
 from .utils import normalizar_columnas
 
 # Verificar si las columnas clave están en df
