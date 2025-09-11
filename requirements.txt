@@ -8,5 +8,5 @@ openpyxl
 pandas
 pyyaml
 rapidfuzz
-seaburn
+seaborn
 
