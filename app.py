@@ -1,30 +1,61 @@
-
-import streamlit as st
 import pandas as pd
+import networkx as nx
+import streamlit as st
 import matplotlib.pyplot as plt
-from flujo_caja import calcular_flujo_caja, proyeccion_flujo
-from base_datos import cargar_datos_iniciales, cargar_datos_incrementales, obtener_datos_historial
-from relaciones import verificar_relaciones, mostrar_alertas
 
-import pandas as pd
-import streamlit as st
-
-
-# Cargar el archivo Excel
-archivo_inicial = st.file_uploader("Cargar archivo completo de datos")
-
-if archivo_inicial is not None:
-    # Leer las hojas del archivo Excel
-    xls = pd.ExcelFile(archivo_inicial)
+# Función para verificar las relaciones entre las hojas
+def verificar_relaciones():
+    archivo_inicial = st.file_uploader("Cargar archivo completo de datos", type=["xlsx", "csv"])
     
-    # Mostrar todas las hojas disponibles en el archivo Excel
-    st.write("Hojas disponibles:", xls.sheet_names)
-    
-    # Cargar la pestaña específica (si la conoces)
-    df_inicial = pd.read_excel(xls, sheet_name="X Agente")  # O ajusta según el nombre de la hoja correcta
-    st.write("Primeras filas del archivo cargado:", df_inicial.head())
+    if archivo_inicial is not None:
+        # Leer las hojas del archivo Excel
+        xls = pd.ExcelFile(archivo_inicial)
+        
+        # Mostrar las hojas disponibles
+        st.write("Hojas disponibles:", xls.sheet_names)
+        
+        # Crear un grafo para mapear las relaciones entre las hojas
+        grafo = nx.Graph()
 
+        # Suponiendo que cada hoja tiene una columna 'relaciones' que define las relaciones entre ellas
+        for sheet_name in xls.sheet_names:
+            df = pd.read_excel(xls, sheet_name=sheet_name)
+            
+            # Verificar si existe la columna 'relaciones'
+            if 'relaciones' in df.columns:
+                for relation in df['relaciones']:
+                    grafo.add_edge(sheet_name, relation)  # Crear una relación entre las hojas
 
+        # Verificar si hay relaciones rotas
+        relaciones_rotas = [node for node, degree in grafo.degree() if degree == 0]
+
+        # Verificar si existen relaciones erróneas o mal definidas
+        relaciones_erroneas = []
+        for node in grafo.nodes():
+            # Si un nodo tiene relaciones que no existen en el grafo (es decir, hojas que no están conectadas)
+            for neighbor in grafo.neighbors(node):
+                if neighbor not in grafo.nodes():
+                    relaciones_erroneas.append((node, neighbor))
+
+        if len(relaciones_rotas) > 0:
+            st.warning(f"Existen relaciones rotas (sin conexiones) en las hojas: {relaciones_rotas}")
+        elif len(relaciones_erroneas) > 0:
+            st.warning(f"Existen relaciones erróneas en las hojas: {relaciones_erroneas}")
+        else:
+            st.success("Las relaciones entre hojas están intactas.")
+        
+        return grafo
+
+# Cargar y verificar las relaciones
+grafo = verificar_relaciones()
+
+# Si el grafo es válido, dibujamos la red de relaciones
+if grafo:
+    st.write("Relaciones entre las hojas:")
+    nx.draw(grafo, with_labels=True, node_color='skyblue', node_size=3000, font_size=10)
+    st.pyplot()
+
+# Configuración de Streamlit
 st.set_page_config(page_title="FixCel - Dashboard de Flujo de Caja", layout="wide")
 st.title("📊 FixCel - Dashboard de Flujo de Caja y Relaciones")
 
