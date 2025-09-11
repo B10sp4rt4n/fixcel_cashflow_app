@@ -28,7 +28,7 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
         raise TypeError("El objeto pasado no es un DataFrame. Se esperaba un DataFrame de pandas.")
     
     df = df.copy()
-    df.columns = [normalize_header(c) for c in df.columns]
+    df = normalize_columns(df)
     return df
 
 
