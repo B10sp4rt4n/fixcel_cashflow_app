@@ -15,6 +15,24 @@ from main import schema_maper # O schema_mapper si lo renombras
 from main import kpi_cpc
 from main.utils import normalizar_columnas
 
+# 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
+empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
+archivo = st.sidebar.file_uploader("Sube Excel o CSV", type=["xlsx", "csv"], key="uploader_main")
+
+if archivo:
+    df_can, meta = schema_maper.run_mapping_pipeline(archivo, empresa=empresa)
+    with st.expander("Diagnóstico de mapeo"):
+        st.write(meta)
+        st.dataframe(df_can.head())
+
+    # 2) Calcular KPIs disponible
+    results, report = kpi_engine.compute_kpis(df_can)
+    st.subheader("KPIs disponibles")
+    st.write(results)
+    st.subheader("Estado por KPI")
+    st.dataframe(report)
+
+
 # ETL UI (gracia si aún no lo has copiado)
 try:
     from main import etl_ventas_items_ui
@@ -23,8 +41,6 @@ except Exception:
     HAS_ETL_UI = False
 
 st.set_page_config(layout="wide")
-
-# 🛠️ FUNCIÓN: Normalización de encabezados
 
 
 # 🛠️ FUNCIÓN: Carga de Excel con detección de múltiples hojas y CONTPAQi
