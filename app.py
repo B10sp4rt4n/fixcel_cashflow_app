@@ -1,4 +1,4 @@
-# app.py
+# En tu archivo app.py
 
 import pandas as pd
 import networkx as nx
@@ -6,13 +6,16 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
 
-# --- Módulos de la Aplicación ---
+# --- IMPORTACIONES CORREGIDAS ---
+# Este es el contenido para el archivo main/__init__.py
+
+# --- IMPORTACIONES CORRECTAS ---
 from main import main_kpi
 from main import main_comparativo
 from main import heatmap_ventas
 from main import kpi_engine
-from main import schema_maper # O schema_mapper si lo renombras
-
+from main import schema_maper
+# Al principio de app.py
 from main.utils import normalizar_columnas
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
@@ -41,6 +44,8 @@ except Exception:
     HAS_ETL_UI = False
 
 st.set_page_config(layout="wide")
+
+# 🛠️ FUNCIÓN: Normalización de encabezados
 
 
 # 🛠️ FUNCIÓN: Carga de Excel con detección de múltiples hojas y CONTPAQi
