@@ -10,7 +10,7 @@ from unidecode import unidecode
 
 from . import main_comparativo
 from . import kpi_engine
-import schema_maper      # Recomendación: Renombra tu archivo a schema_mapper.py
+from . import schema_maper    
 
 # ... aquí irían el resto de tus importaciones
 def run(df):
