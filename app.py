@@ -9,33 +9,29 @@ from relaciones import verificar_relaciones, mostrar_alertas
 import pandas as pd
 import streamlit as st
 
-# Cargar el archivo
+# Cargar el archivo Excel
 archivo_inicial = st.file_uploader("Cargar archivo completo de datos")
 
 if archivo_inicial is not None:
-    # Cargar los datos en un DataFrame
-    df_inicial = pd.read_excel(archivo_inicial)  # O pd.read_csv(archivo_inicial) si es CSV
+    # Leer la pestaña 'X Agente' del archivo Excel
+    df_inicial = pd.read_excel(archivo_inicial, sheet_name="X Agente")  # Especificamos el nombre de la pestaña
     
-    # Verificar las columnas del DataFrame
-    st.write("Columnas del archivo cargado:", df_inicial.columns)
+    # Verificar las columnas
+    st.write("Columnas del archivo:", df_inicial.columns)
     
     # Mostrar las primeras filas para ver el contenido
     st.write("Primeras filas del archivo cargado:", df_inicial.head())
     
     # Verificar si la columna 'mes' está presente
     if 'mes' not in df_inicial.columns:
-        st.error("La columna 'mes' no está presente en el archivo.")
+        st.error("La columna 'mes' no está presente en la pestaña 'X Agente'.")
     else:
-        st.success("La columna 'mes' está presente en el archivo.")
+        st.success("La columna 'mes' está presente en la pestaña 'X Agente'.")
         
-    # Si el nombre de la columna es diferente, renombrarla
-    if 'Nombre_original_de_mes' in df_inicial.columns:
-        df_inicial.rename(columns={'Nombre_original_de_mes': 'mes'}, inplace=True)
-        st.write("Columna renombrada a 'mes'.")
-
     # Procesar los datos según sea necesario
     cargar_datos_iniciales(df_inicial)
     st.success("Datos cargados exitosamente.")
+
 
 
 st.set_page_config(page_title="FixCel - Dashboard de Flujo de Caja", layout="wide")
