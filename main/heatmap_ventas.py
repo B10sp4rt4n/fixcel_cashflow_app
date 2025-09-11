@@ -1,3 +1,4 @@
+
 # Importa directamente cada archivo (módulo)
 import pandas as pd
 import networkx as nx
@@ -6,50 +7,18 @@ import matplotlib.pyplot as plt
 from unidecode import unidecode
 
 # --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
+
 from . import main_comparativo
 from . import kpi_engine
 from . import schema_maper 
-from  .import main_kpi
-from .utils import normalizar_columnas
-
-# Verificar si las columnas clave están en df
-required_columns = ['fecha', 'linea', 'importe']
-missing_columns = [col for col in required_columns if col not in df.columns]
-if missing_columns:
-    st.error(f"❌ Faltan las columnas: {', '.join(missing_columns)}")
-    return  # Sale de la función si faltan columnas
+from . utils import normalizar_columnas
 
 def run(df):   
+
+# ... aquí irían el resto de tus importaciones
+def run(df):
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
 
-    # Paso 1.1: Verificar si las columnas clave están en df
-    required_columns = ['fecha', 'linea', 'importe']
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        st.error(f"❌ Faltan las columnas: {', '.join(missing_columns)}")
-        return  # Detiene la ejecución si faltan columnas
-
-    # Paso 2.1: Convertir la columna fecha a tipo datetime si no lo está
-    df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
-
-    # Paso 3.1: Verificar si las columnas `linea` e `importe` están detectadas correctamente
-    columna_linea = detectar_columna(df, mapa_columnas["linea"])
-    columna_importe = detectar_columna(df, mapa_columnas["importe"])
-
-    if columna_linea is None or columna_importe is None:
-        st.error("❌ No se encontraron las columnas clave necesarias para 'línea' e 'importe'.")
-        st.write(f"Columnas detectadas en tu archivo: {df.columns.tolist()}")
-        return  # Detiene la ejecución si alguna columna no se encuentra
-
-    # Paso 4.1: Eliminar filas con valores nulos en las columnas clave
-    df = df.dropna(subset=['linea', 'importe', 'fecha'])
-
-    # Paso 5.1: Transformaciones de fechas
-    df['mes_anio'] = df['fecha'].dt.strftime('%b-%Y')
-    df['anio'] = df['fecha'].dt.year
-    df['trimestre'] = df['fecha'].dt.to_period('Q').astype(str)
-
-    # Continuar con el resto del código...
     mapa_columnas = {
         "linea": ["linea_prodcucto", "linea_producto", "linea_de_negocio", "linea producto", "linea_de_producto"],
         "importe": ["valor_mn", "importe", "valor_usd", "valor mn"]
