@@ -9,8 +9,8 @@ from unidecode import unidecode
 
 # --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
 
-import main_comparativo   # Corregido: sin espacio
-import heatmap_ventas     # Corregido: sin espacio
+from . import main_comparativo
+from . import kpi_engine
 import kpi_engine
 import schema_maper      # Recomendación: Renombra tu archivo a schema_mapper.py
 

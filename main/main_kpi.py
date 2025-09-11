@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
+# main/main_kpi.py necesita usar algo de kpi_engine.py
+from . import kpi_engine # El punto '.' significa "desde esta misma carpeta"
+
 def run():
     st.title("📈 KPIs Generales")
 
