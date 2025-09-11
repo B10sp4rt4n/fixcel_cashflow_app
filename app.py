@@ -3,7 +3,7 @@ import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
-from main.main_kpi import main_kpi
+from main import main_kpi
 from main import main_comparativo, heatmap_ventas
 from main import kpi_cpc
 from main import schema_mapper, kpi_engine
