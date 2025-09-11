@@ -31,6 +31,53 @@ if archivo:
     st.subheader("Estado por KPI")
     st.dataframe(report)
 
+# Reemplaza la función completa en tu archivo app.py con esta:
+
+def detectar_y_cargar_archivo(archivo):
+    xls = pd.ExcelFile(archivo)
+    hojas = xls.sheet_names
+
+    # Crear grafo para las relaciones entre las hojas
+    grafo = nx.Graph()
+
+    # Caso 1: Si hay múltiples hojas → Forzar lectura de "X AGENTE"
+    if len(hojas) > 1:
+        if "X AGENTE" in hojas:
+            hoja = "X AGENTE"
+            st.info("📌 Archivo con múltiples hojas detectado. Leyendo hoja 'X AGENTE'.")
+        else:
+            st.warning("⚠️ Múltiples hojas detectadas pero no se encontró la hoja 'X AGENTE'. Selecciona manualmente.")
+            hoja = st.sidebar.selectbox("📄 Selecciona la hoja a leer", hojas)
+
+        df = pd.read_excel(xls, sheet_name=hoja)
+        df = normalizar_columnas(df)  # <-- CORRECCIÓN CLAVE: Normalizar aquí
+
+        # Generación virtual de columnas año y mes para X AGENTE
+        if hoja == "X AGENTE":
+            if "fecha" in df.columns:
+                try:
+                    df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+                    df["ano"] = df["fecha"].dt.year # Usar "ano" para que el código posterior lo estandarice a "año"
+                    df["mes"] = df["fecha"].dt.month
+                    st.success("✅ Columnas virtuales 'ano' y 'mes' generadas correctamente.")
+                except Exception as e:
+                    st.error(f"❌ Error al procesar la columna 'fecha' en X AGENTE: {e}")
+            else:
+                st.error("❌ No existe columna 'fecha' en X AGENTE para poder generar 'ano' y 'mes'.")
+
+    else:
+        # Caso 2: Solo una hoja → Detectar si es CONTPAQi
+        hoja = hojas[0]
+        st.info(f"✅ Solo una hoja encontrada: **{hoja}**. Procediendo con detección CONTPAQi.")
+        preview = pd.read_excel(xls, sheet_name=hoja, nrows=5, header=None)
+        contiene_contpaqi = preview.iloc[0, 0]
+        skiprows = 3 if isinstance(contiene_contpaqi, str) and "contpaqi" in contiene_contpaqi.lower() else 0
+        if skiprows:
+            st.info("📌 Archivo CONTPAQi detectado. Saltando primeras 3 filas.")
+        df = pd.read_excel(xls, sheet_name=hoja, skiprows=skiprows)
+        df = normalizar_columnas(df)
+
+    return df, grafo
 
 # ETL UI (gracia si aún no lo has copiado)
 try:
