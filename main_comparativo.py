@@ -1,4 +1,4 @@
-from main import kpi_engine # Esto causa el bucle
+from . import kpi_engine
 
 import streamlit as st
 import pandas as pd
