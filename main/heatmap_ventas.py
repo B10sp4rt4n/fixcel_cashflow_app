@@ -1,18 +1,20 @@
-# Reemplaza las importaciones de las líneas 6 a la 9 en app.py con esto:
+from . import kpi_engine
 
+# Importa directamente cada archivo (módulo)
 import pandas as pd
 import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
 
-# Importa cada módulo/función que usarás de forma explícita
-from main import main_kpi
-from main import main_comparativo
-from main import heatmap_ventas
-from main import kpi_cpc         # Módulo para la cartera CxC
-from main import schema_mapper   # Usa el nombre correcto
-from main import kpi_engine
+# --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
+
+import main_comparativo   # Corregido: sin espacio
+import heatmap_ventas     # Corregido: sin espacio
+import kpi_engine
+import schema_maper      # Recomendación: Renombra tu archivo a schema_mapper.py
+
+# ... aquí irían el resto de tus importaciones
 def run(df):
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
 
