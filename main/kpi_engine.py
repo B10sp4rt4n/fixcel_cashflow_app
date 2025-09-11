@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Any
 import pandas as pd
 
 # Catálogo de KPIs (nombre -> requisitos y función)
-# Cada compute_* debe asumir que df ya está canónico (schema_mapper).
+
 KPI_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
 def kpi(name: str, requires: List[str]):
