@@ -1,4 +1,3 @@
-
 # Importa directamente cada archivo (módulo)
 import pandas as pd
 import networkx as nx
@@ -7,7 +6,6 @@ import matplotlib.pyplot as plt
 from unidecode import unidecode
 
 # --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
-
 from . import main_comparativo
 from . import kpi_engine
 from . import schema_maper 
@@ -21,10 +19,6 @@ if missing_columns:
     return  # Sale de la función si faltan columnas
 
 def run(df):   
-
-    st.title("📊 Heatmap de Ventas (Entrada Genérica)")
-
-def run(df):
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
 
     # Paso 1.1: Verificar si las columnas clave están en df
@@ -55,7 +49,6 @@ def run(df):
     df['trimestre'] = df['fecha'].dt.to_period('Q').astype(str)
 
     # Continuar con el resto del código...
-
     mapa_columnas = {
         "linea": ["linea_prodcucto", "linea_producto", "linea_de_negocio", "linea producto", "linea_de_producto"],
         "importe": ["valor_mn", "importe", "valor_usd", "valor mn"]
