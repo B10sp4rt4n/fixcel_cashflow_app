@@ -1,9 +1,10 @@
 streamlit
+unidecode
 pandas
 matplotlib
 networkx
 openpyxl
 pandas
-unidecode
 pyyaml
-rapidfuzz  
+rapidfuzz
+seaburn
