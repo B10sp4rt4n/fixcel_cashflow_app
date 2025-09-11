@@ -167,4 +167,4 @@ elif menu == "💳 KPI Cartera CxC":
         st.warning("⚠️ Primero sube un archivo para visualizar CXC.")
 
 elif menu == "🧩 Consolidación (Hoja 3)" and HAS_ETL_UI:
-    etl_ventas_items_ui.run()
+    etl_ventas_items_ui.run()    
