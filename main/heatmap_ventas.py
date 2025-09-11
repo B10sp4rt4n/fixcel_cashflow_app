@@ -1,28 +1,20 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import io
-import unicodedata
+# Reemplaza las importaciones de las líneas 6 a la 9 en app.py con esto:
 
+import pandas as pd
+import networkx as nx
+import streamlit as st
+import matplotlib.pyplot as plt
+from unidecode import unidecode
+
+# Importa cada módulo/función que usarás de forma explícita
+from main import main_kpi
+from main import main_comparativo
+from main import heatmap_ventas
+from main import kpi_cpc         # Módulo para la cartera CxC
+from main import schema_mapper   # Usa el nombre correcto
+from main import kpi_engine
 def run(df):
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
-
-    def clean_columns(columns):
-        return (
-            columns.astype(str)
-            .str.strip()
-            .str.lower()
-            .map(lambda x: unicodedata.normalize('NFKD', x).encode('ascii', errors='ignore').decode('utf-8'))
-        )
-
-    def detectar_columna(df, posibles_nombres):
-        for posible in posibles_nombres:
-            for col in df.columns:
-                if unicodedata.normalize('NFKD', col.lower().strip()).encode('ascii', errors='ignore').decode('utf-8') == unicodedata.normalize('NFKD', posible.lower().strip()).encode('ascii', errors='ignore').decode('utf-8'):
-                    return col
-        return None
 
     mapa_columnas = {
         "linea": ["linea_prodcucto", "linea_producto", "linea_de_negocio", "linea producto", "linea_de_producto"],
