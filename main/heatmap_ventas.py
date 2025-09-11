@@ -22,7 +22,7 @@ def run(df):
         "importe": ["valor_mn", "importe", "valor_usd", "valor mn"]
     }
 
-    df.columns = clean_columns(df.columns)
+    df.columns = normalize_columns(df.columns)
     df['mes_anio'] = df['fecha'].dt.strftime('%b-%Y')
     df['anio'] = df['fecha'].dt.year
     df['trimestre'] = df['fecha'].dt.to_period('Q').astype(str)
