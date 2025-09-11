@@ -5,6 +5,7 @@ import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
+from .schema_maper import normalize_columns
 
 # --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
 

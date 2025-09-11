@@ -4,7 +4,6 @@ import os
 from typing import Dict, List, Tuple, Optional
 import pandas as pd
 from unidecode import unidecode
-from .schema_maper import normalize_columns
 
 # ---- Fuzzy (opcional) --------------------------------------------------------
 try:
