@@ -12,7 +12,6 @@ from main import main_comparativo
 from main import heatmap_ventas
 from main import kpi_engine
 from main import schema_maper # O schema_mapper si lo renombras
-from main import kpi_cpc
 from main.utils import normalizar_columnas
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
