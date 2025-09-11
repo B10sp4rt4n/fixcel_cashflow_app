@@ -10,10 +10,11 @@ from unidecode import unidecode
 
 from . import main_comparativo
 from . import kpi_engine
-from . import schema_maper    
+from . import schema_maper 
+from .utils import normalizar_columnas
 
-# ... aquí irían el resto de tus importaciones
-def run(df):
+def run(df):   
+
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
 
     mapa_columnas = {
