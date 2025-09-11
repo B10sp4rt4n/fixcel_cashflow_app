@@ -6,4 +6,4 @@ openpyxl
 pandas
 unidecode
 pyyaml
-rapidfuzz
+rapidfuzz  
