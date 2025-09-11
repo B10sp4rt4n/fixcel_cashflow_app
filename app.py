@@ -2,151 +2,169 @@ import pandas as pd
 import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
+from unidecode import unidecode
+from main import main_kpi, main_comparativo, heatmap_ventas
+from main import kpi_cpc
 
-# Función para verificar las relaciones entre las hojas
-def verificar_relaciones():
-    archivo_inicial = st.file_uploader("Cargar archivo completo de datos", type=["xlsx", "csv"])
-    
-    if archivo_inicial is not None:
-        # Leer las hojas del archivo Excel
-        xls = pd.ExcelFile(archivo_inicial)
-        
-        # Mostrar las hojas disponibles
-        st.write("Hojas disponibles:", xls.sheet_names)
-        
-        # Crear un grafo para mapear las relaciones entre las hojas
-        grafo = nx.Graph()
+# ETL UI (gracia si aún no lo has copiado)
+try:
+    from main import etl_ventas_items_ui
+    HAS_ETL_UI = True
+except Exception:
+    HAS_ETL_UI = False
 
-        # Suponiendo que cada hoja tiene una columna 'relaciones' que define las relaciones entre ellas
-        for sheet_name in xls.sheet_names:
-            df = pd.read_excel(xls, sheet_name=sheet_name)
-            
-            # Verificar si existe la columna 'relaciones'
-            if 'relaciones' in df.columns:
-                for relation in df['relaciones']:
-                    grafo.add_edge(sheet_name, relation)  # Crear una relación entre las hojas
+st.set_page_config(layout="wide")
 
-        # Verificar si hay relaciones rotas
-        relaciones_rotas = [node for node, degree in grafo.degree() if degree == 0]
+# 🛠️ FUNCIÓN: Normalización de encabezados
+def normalizar_columnas(df):
+    nuevas_columnas = []
+    for col in df.columns:
+        col_str = str(col).lower().strip().replace(" ", "_")
+        col_str = unidecode(col_str)
+        nuevas_columnas.append(col_str)
+    df.columns = nuevas_columnas
+    return df
 
-        # Verificar si existen relaciones erróneas o mal definidas
-        relaciones_erroneas = []
-        for node in grafo.nodes():
-            # Si un nodo tiene relaciones que no existen en el grafo (es decir, hojas que no están conectadas)
-            for neighbor in grafo.neighbors(node):
-                if neighbor not in grafo.nodes():
-                    relaciones_erroneas.append((node, neighbor))
+# 🛠️ FUNCIÓN: Carga de Excel con detección de múltiples hojas y CONTPAQi
+def detectar_y_cargar_archivo(archivo):
+    xls = pd.ExcelFile(archivo)
+    hojas = xls.sheet_names
 
-        if len(relaciones_rotas) > 0:
-            st.warning(f"Existen relaciones rotas (sin conexiones) en las hojas: {relaciones_rotas}")
-        elif len(relaciones_erroneas) > 0:
-            st.warning(f"Existen relaciones erróneas en las hojas: {relaciones_erroneas}")
+    # Crear grafo para las relaciones entre las hojas
+    grafo = nx.Graph()
+
+    # Caso 1: Si hay múltiples hojas → Forzar lectura de "X AGENTE"
+    if len(hojas) > 1:
+        if "X AGENTE" in hojas:
+            hoja = "X AGENTE"
+            st.info("📌 Archivo con múltiples hojas detectado. Leyendo hoja 'X AGENTE'.")
         else:
-            st.success("Las relaciones entre hojas están intactas.")
-        
-        return grafo
+            st.warning("⚠️ Múltiples hojas detectadas pero no se encontró la hoja 'X AGENTE'. Selecciona manualmente.")
+            hoja = st.sidebar.selectbox("📄 Selecciona la hoja a leer", hojas)
 
-# Cargar y verificar las relaciones
-grafo = verificar_relaciones()
+        df = pd.read_excel(xls, sheet_name=hoja)
+        df = normalizar_columnas(df)
 
-# Si el grafo es válido, dibujamos la red de relaciones
-if grafo:
-    st.write("Relaciones entre las hojas:")
-    nx.draw(grafo, with_labels=True, node_color='skyblue', node_size=3000, font_size=10)
-    st.pyplot()
+        with st.expander("🛠️ Debug - Columnas leídas desde X AGENTE"):
+            st.write(df.columns.tolist())
 
-# Configuración de Streamlit
-st.set_page_config(page_title="FixCel - Dashboard de Flujo de Caja", layout="wide")
-st.title("📊 FixCel - Dashboard de Flujo de Caja y Relaciones")
+        # Generación virtual de columnas año y mes para X AGENTE
+        if hoja == "X AGENTE":
+            if "fecha" in df.columns:
+                try:
+                    df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+                    df["año"] = df["fecha"].dt.year
+                    df["mes"] = df["fecha"].dt.month
+                    st.success("✅ Columnas virtuales 'año' y 'mes' generadas correctamente desde 'fecha' en X AGENTE.")
+                except Exception as e:
+                    st.error(f"❌ Error al procesar la columna 'fecha' en X AGENTE: {e}")
+            else:
+                st.error("❌ No existe columna 'fecha' en X AGENTE para poder generar 'año' y 'mes'.")
 
-# Menú de navegación
-menu = st.sidebar.radio("Navegar", [
-    "Carga de Datos Iniciales",
-    "Carga de Datos Incrementales",
-    "Análisis de Flujo de Caja",
-    "Proyecciones de Flujo de Caja",
-    "Verificación de Relaciones"
-])
-
-# Cargar datos iniciales
-if menu == "Carga de Datos Iniciales":
-    st.header("📥 Cargar Datos Iniciales")
-    archivo_inicial = st.file_uploader("Cargar archivo completo de datos históricos (Excel o CSV)", type=["xlsx", "csv"])
-
-    if archivo_inicial is not None:
-        df_inicial = pd.read_excel(archivo_inicial)  # O pd.read_csv(archivo_inicial) si es CSV
-        st.write("Vista previa de los datos cargados:")
-        st.dataframe(df_inicial)
-
-        # Cargar los datos en la base de datos
-        cargar_datos_iniciales(df_inicial)
-        st.success("Datos históricos cargados exitosamente.")
-
-# Cargar datos incrementales
-elif menu == "Carga de Datos Incrementales":
-    st.header("📥 Cargar Datos Incrementales")
-    archivo_incremental = st.file_uploader("Cargar archivo de datos incrementales (Excel o CSV)", type=["xlsx", "csv"])
-
-    if archivo_incremental is not None:
-        df_incremental = pd.read_excel(archivo_incremental)  # O pd.read_csv(archivo_incremental) si es CSV
-        st.write("Vista previa de los datos incrementales cargados:")
-        st.dataframe(df_incremental)
-
-        # Cargar los datos incrementales en la base de datos
-        cargar_datos_incrementales(df_incremental)
-        st.success("Datos incrementales cargados exitosamente.")
-
-# Análisis de Flujo de Caja
-elif menu == "Análisis de Flujo de Caja":
-    st.header("💸 Análisis de Flujo de Caja")
-    datos_historial = obtener_datos_historial()
-    if not datos_historial.empty:
-        flujo_caja = calcular_flujo_caja(datos_historial)
-        st.write(f"Flujo de Caja Neto: ${flujo_caja}")
-
-        # Visualización del flujo de caja
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(datos_historial["mes"], datos_historial["entradas"], label="Entradas", color="green")
-        ax.plot(datos_historial["mes"], datos_historial["salidas"], label="Salidas", color="red")
-        ax.set_xlabel("Mes")
-        ax.set_ylabel("Monto ($)")
-        ax.set_title("Flujo de Caja")
-        ax.legend()
-        st.pyplot(fig)
     else:
-        st.warning("No hay datos históricos disponibles. Carga datos iniciales primero.")
+        # Caso 2: Solo una hoja → Detectar si es CONTPAQi
+        hoja = hojas[0]
+        st.info(f"✅ Solo una hoja encontrada: **{hoja}**. Procediendo con detección CONTPAQi.")
+        preview = pd.read_excel(xls, sheet_name=hoja, nrows=5, header=None)
+        contiene_contpaqi = preview.iloc[0, 0]
+        skiprows = 3 if isinstance(contiene_contpaqi, str) and "contpaqi" in contiene_contpaqi.lower() else 0
+        if skiprows:
+            st.info("📌 Archivo CONTPAQi detectado. Saltando primeras 3 filas.")
+        df = pd.read_excel(xls, sheet_name=hoja, skiprows=skiprows)
+        df = normalizar_columnas(df)
 
-# Proyecciones de Flujo de Caja
-elif menu == "Proyecciones de Flujo de Caja":
-    st.header("📈 Proyección de Flujo de Caja")
-    datos_historial = obtener_datos_historial()
+    return df, grafo
 
-    if not datos_historial.empty:
-        proyeccion = proyeccion_flujo(datos_historial)
+archivo = st.sidebar.file_uploader("📂 Sube archivo de ventas (.csv o .xlsx)", type=["csv", "xlsx"])
 
-        # Mostrar proyecciones para los próximos meses
-        st.write("Proyección de Flujo de Caja para los próximos 3 meses:")
-        st.write(proyeccion)
-
-        # Visualizar las proyecciones
-        meses = ['Mes 1', 'Mes 2', 'Mes 3']
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(meses, proyeccion["entradas"], label="Proyección Entradas", color="blue")
-        ax.plot(meses, proyeccion["salidas"], label="Proyección Salidas", color="orange")
-        ax.set_xlabel("Mes")
-        ax.set_ylabel("Monto ($)")
-        ax.set_title("Proyección de Flujo de Caja")
-        ax.legend()
-        st.pyplot(fig)
+if archivo:
+    if archivo.name.endswith(".csv"):
+        df = pd.read_csv(archivo)
+        df = normalizar_columnas(df)
+        grafo = nx.Graph()  # Crear el grafo para CSV
     else:
-        st.warning("No hay datos históricos disponibles para realizar la proyección.")
+        df, grafo = detectar_y_cargar_archivo(archivo)
 
-# Verificación de Relaciones
-elif menu == "Verificación de Relaciones":
-    st.header("🔍 Verificación de Relaciones entre Hojas")
-    grafo = verificar_relaciones()
+    # Guardar archivo original para KPI CxC
+    st.session_state["archivo_excel"] = archivo
 
-    if grafo:
-        st.success("Las relaciones entre hojas están intactas.")
+    # Detectar y renombrar columna de año
+    for col in df.columns:
+        if col in ["ano", "anio", "año", "aÃ±o", "aã±o"]:
+            df = df.rename(columns={col: "año"})
+            break
+
+    if "año" in df.columns:
+        df["año"] = pd.to_numeric(df["año"], errors="coerce")
+
+    for col in df.select_dtypes(include='object').columns:
+        df[col] = df[col].astype(str)
+
+    # Detectar columna de ventas
+    columnas_ventas_usd = ["valor_usd", "ventas_usd", "ventas_usd_con_iva"]
+    columna_encontrada = next((col for col in columnas_ventas_usd if col in df.columns), None)
+
+    if not columna_encontrada:
+        st.warning("⚠️ No se encontró la columna 'valor_usd', 'ventas_usd' ni 'ventas_usd_con_iva'.")
+        st.write("Columnas detectadas:")
+        st.write(df.columns.tolist())
     else:
-        st.warning("Existen relaciones rotas entre las hojas. Por favor, revisa los datos.")
+        st.success(f"✅ Columna de ventas detectada: **{columna_encontrada}**")
+        st.session_state["columna_ventas"] = columna_encontrada
+
+    if "fecha" in df.columns:
+        df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+
+    st.session_state["df"] = df
+    st.session_state["archivo_path"] = archivo
+
+    if "año" in df.columns:
+        with st.expander("🛠️ Diagnóstico de columnas (debug)"):
+            st.write("Columnas detectadas:", df.columns.tolist())
+            st.write("Valores únicos en columna 'año':", df["año"].unique())
+
+        años_disponibles = sorted(df["año"].dropna().unique())
+        año_base = st.sidebar.selectbox("📅 Selecciona el año base", años_disponibles)
+        st.session_state["año_base"] = año_base
+        st.success(f"📌 Año base seleccionado: {año_base}")
+    else:
+        st.warning("⚠️ No se encontró columna 'año' para seleccionar año base.")
+
+# ───────────────────────────────
+# Navegación
+# ───────────────────────────────
+menu_items = [
+    "📈 KPIs Generales",
+    "📊 Comparativo Año vs Año",
+    "🔥 Heatmap Ventas",
+    "💳 KPI Cartera CxC",
+]
+if HAS_ETL_UI:
+    menu_items.append("🧩 Consolidación (Hoja 3)")
+
+menu = st.sidebar.radio("Navegación", menu_items)
+
+if menu == "📈 KPIs Generales":
+    main_kpi.run()
+
+elif menu == "📊 Comparativo Año vs Año":
+    if "df" in st.session_state:
+        año_base = st.session_state.get("año_base", None)
+        main_comparativo.run(st.session_state["df"], año_base=año_base)
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar el comparativo año vs año.")
+
+elif menu == "🔥 Heatmap Ventas":
+    if "df" in st.session_state:
+        heatmap_ventas.run(st.session_state["df"])
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar el Heatmap.")
+
+elif menu == "💳 KPI Cartera CxC":
+    if "archivo_excel" in st.session_state:
+        kpi_cpc.run(st.session_state["archivo_excel"])
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar CXC.")
+
+elif menu == "🧩 Consolidación (Hoja 3)" and HAS_ETL_UI:
+    etl_ventas_items_ui.run()
