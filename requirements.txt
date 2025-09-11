@@ -1,5 +1,6 @@
 streamlit
 unidecode
+numpy
 pandas
 matplotlib
 networkx
@@ -8,3 +9,4 @@ pandas
 pyyaml
 rapidfuzz
 seaburn
+
