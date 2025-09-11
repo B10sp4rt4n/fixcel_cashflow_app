@@ -5,6 +5,25 @@ import matplotlib.pyplot as plt
 from unidecode import unidecode
 from main import main_kpi, main_comparativo, heatmap_ventas
 from main import kpi_cpc
+from main import schema_mapper, kpi_engine
+
+# 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
+empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
+archivo = st.sidebar.file_uploader("Sube Excel o CSV", type=["xlsx", "csv"], key="uploader_main")
+
+if archivo:
+    df_can, meta = schema_mapper.run_mapping_pipeline(archivo, empresa=empresa)
+    with st.expander("Diagnóstico de mapeo"):
+        st.write(meta)
+        st.dataframe(df_can.head())
+
+    # 2) Calcular KPIs disponibles
+    results, report = kpi_engine.compute_kpis(df_can)
+    st.subheader("KPIs disponibles")
+    st.write(results)
+    st.subheader("Estado por KPI")
+    st.dataframe(report)
+
 
 # ETL UI (gracia si aún no lo has copiado)
 try:

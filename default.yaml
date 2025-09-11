@@ -1,0 +1,32 @@
+sheet: "X AGENTE"
+skiprows: 0
+
+canonical:
+  - fecha
+  - año
+  - mes
+  - cliente_id
+  - cliente_nombre
+  - agente
+  - producto
+  - cantidad
+  - importe
+  - moneda
+
+# Mapeos forzados (empresa -> canónico). Vacío por default.
+columns: {}
+
+# Sinónimos por canónico (puedes ampliar por industria/cliente)
+synonyms:
+  fecha: ["fecha", "date", "f_emision", "periodo"]
+  año: ["ano", "anio", "año", "year"]
+  mes: ["mes", "month"]
+  cliente_id: ["cliente", "id_cliente", "customer_id", "id"]
+  cliente_nombre: ["cliente_nombre", "razon_social", "customer_name", "cliente_desc"]
+  agente: ["agente", "agent", "vendedor", "seller"]
+  producto: ["producto", "item", "sku", "articulo"]
+  cantidad: ["cantidad", "qty", "unidades", "uds"]
+  importe: ["importe", "valor_usd", "ventas_usd", "monto", "total", "subtotal", "sales"]
+  moneda: ["moneda", "currency", "divisa"]
+
+rules: {}

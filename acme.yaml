@@ -1,0 +1,9 @@
+sheet: "X AGENTE"
+skiprows: 0
+columns:
+  importe: "Ventas_USD"
+  agente: "Vendedor"
+  cliente_id: "Cliente"
+transforms: {}
+rules:
+  excluir_estatus: ["Cancelado"]
