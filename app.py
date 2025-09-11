@@ -12,10 +12,8 @@ from main import main_comparativo
 from main import heatmap_ventas
 from main import kpi_engine
 from main import schema_maper # O schema_mapper si lo renombras
-from main.utils import normalizar_columnas
 
-def main():
-    st.set_page_config(layout="wide")
+from main.utils import normalizar_columnas
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
 empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
@@ -34,43 +32,6 @@ if archivo:
     st.subheader("Estado por KPI")
     st.dataframe(report)
 
-# Reemplaza la función completa en tu archivo app.py con esta versión final:
-
-def detectar_y_cargar_archivo(archivo):
-    xls = pd.ExcelFile(archivo)
-    hojas = xls.sheet_names
-    grafo = nx.Graph()
-
-    # Primero, lee el DataFrame sin importar el caso
-    if len(hojas) > 1:
-        hoja_seleccionada = "X AGENTE" if "X AGENTE" in hojas else st.sidebar.selectbox("📄 Selecciona la hoja a leer", hojas)
-        df = pd.read_excel(xls, sheet_name=hoja_seleccionada)
-    else:
-        hoja_seleccionada = hojas[0]
-        preview = pd.read_excel(xls, sheet_name=hoja_seleccionada, nrows=5, header=None)
-        contiene_contpaqi = preview.iloc[0, 0]
-        skiprows = 3 if isinstance(contiene_contpaqi, str) and "contpaqi" in contiene_contpaqi.lower() else 0
-        df = pd.read_excel(xls, sheet_name=hoja_seleccionada, skiprows=skiprows)
-
-    # --- NORMALIZACIÓN UNIVERSAL ---
-    # Ahora que tenemos el df, normalizamos las columnas SIEMPRE
-    df = normalizar_columnas(df)
-    st.success("✅ Columnas normalizadas correctamente.")
-
-    # Ahora que las columnas están limpias, creamos 'año' y 'mes' si es posible
-    if "fecha" in df.columns:
-        try:
-            df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
-            # Se crea 'año' directamente para que el código posterior lo encuentre
-            df["ano"] = df["fecha"].dt.year
-            df["mes"] = df["fecha"].dt.month
-            st.success("✅ Columnas virtuales 'año' y 'mes' generadas.")
-        except Exception as e:
-            st.error(f"❌ Error al procesar la columna 'fecha': {e}")
-    else:
-        st.warning("⚠️ No se encontró la columna 'fecha' para generar 'año' y 'mes'.")
-
-    return df, grafo
 
 # ETL UI (gracia si aún no lo has copiado)
 try:
@@ -197,33 +158,27 @@ if HAS_ETL_UI:
 
 menu = st.sidebar.radio("Navegación", menu_items)
 
-# Verificamos que el DataFrame exista antes de mostrar las opciones
-if "df" in st.session_state:
-    df_procesado = st.session_state["df"]
-    año_base = st.session_state.get("año_base")
+if menu == "📈 KPIs Generales":
+    main_kpi.run()
 
-    if menu == "📈 KPIs Generales":
-        main_kpi.run(df_procesado)  # <--- Le pasamos el df
+elif menu == "📊 Comparativo Año vs Año":
+    if "df" in st.session_state:
+        año_base = st.session_state.get("año_base", None)
+        main_comparativo.run(st.session_state["df"], año_base=año_base)
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar el comparativo año vs año.")
 
-    elif menu == "📊 Comparativo Año vs Año":
-        main_comparativo.run(df_procesado, año_base=año_base) # <--- Le pasamos el df
+elif menu == "🔥 Heatmap Ventas":
+    if "df" in st.session_state:
+        heatmap_ventas.run(st.session_state["df"])
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar el Heatmap.")
 
-    elif menu == "🔥 Heatmap Ventas":
-        heatmap_ventas.run(df_procesado) # <--- Le pasamos el df
+elif menu == "💳 KPI Cartera CxC":
+    if "archivo_excel" in st.session_state:
+        kpi_cpc.run(st.session_state["archivo_excel"])
+    else:
+        st.warning("⚠️ Primero sube un archivo para visualizar CXC.")
 
-    elif menu == "💳 KPI Cartera CxC":
-        kpi_cpc.run(st.session_state["archivo_excel"]) # Este se queda igual, ya recibe el archivo
-
-    elif menu == "🧩 Consolidación (Hoja 3)" and HAS_ETL_UI:
-        etl_ventas_items_ui.run()
-
-elif archivo:
-    # Si el archivo se acaba de cargar, pide recargar
-    st.info("Archivo procesado. Por favor selecciona una opción del menú de navegación.")
-
-else:
-    st.info("Bienvenido. Por favor, sube un archivo en el menú lateral para comenzar.")
-
-# Al final del archivo, añade estas dos líneas:
-if __name__ == "__main__":
-    main()
+elif menu == "🧩 Consolidación (Hoja 3)" and HAS_ETL_UI:
+    etl_ventas_items_ui.run()    
