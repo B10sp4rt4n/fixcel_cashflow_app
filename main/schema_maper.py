@@ -19,6 +19,19 @@ try:
 except Exception:
     HAS_YAML = False
 
+
+import pandas as pd
+
+def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    # Verificar que 'df' sea un DataFrame
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("El objeto pasado no es un DataFrame. Se esperaba un DataFrame de pandas.")
+    
+    df = df.copy()
+    df.columns = [normalize_header(c) for c in df.columns]
+    return df
+
+
 # =============================================================================
 # 1) Normalización y utilidades
 # =============================================================================
@@ -29,9 +42,15 @@ def normalize_header(name: str) -> str:
     return s
 
 def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normaliza las columnas del DataFrame:
+    1. Elimina espacios en blanco.
+    2. Convierte todo a minúsculas.
+    """
     df = df.copy()
-    df.columns = [normalize_header(c) for c in df.columns]
+    df.columns = [normalize_header(c) for c in df.columns]  # Llamada a normalize_header para cada columna
     return df
+
 
 def parse_fecha_y_derivar(df: pd.DataFrame, fecha_col: str = "fecha") -> pd.DataFrame:
     df = df.copy()
