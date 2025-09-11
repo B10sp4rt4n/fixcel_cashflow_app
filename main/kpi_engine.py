@@ -18,6 +18,11 @@ def kpi(name: str, requires: List[str]):
 def compute_ventas_netas(df: pd.DataFrame) -> float:
     return float(pd.to_numeric(df["importe"], errors="coerce").fillna(0).sum())
 
+@kpi("kpi_cpc", requires=["cliente_id", "importe"])
+def compute_kpi_cpc(df: pd.DataFrame) -> float:
+    # Implementación del KPI aquí
+    return float(df["importe"].sum())
+
 @kpi("clientes_activos", requires=["cliente_id", "importe"])
 def compute_clientes_activos(df: pd.DataFrame) -> int:
     df2 = df[pd.to_numeric(df["importe"], errors="coerce").fillna(0) > 0]

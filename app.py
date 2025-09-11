@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from unidecode import unidecode
 from main import main_kpi
 from main import main_comparativo, heatmap_ventas
-from main import kpi_cpc
+from main.kpi_engine import compute_kpi_cpc
 from main import schema_mapper, kpi_engine
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
