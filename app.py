@@ -15,8 +15,6 @@ from main import main_comparativo
 from main import heatmap_ventas
 from main import kpi_engine
 from main import schema_maper
-# Al principio de app.py
-from main.utils import normalizar_columnas
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
 empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
@@ -46,7 +44,14 @@ except Exception:
 st.set_page_config(layout="wide")
 
 # 🛠️ FUNCIÓN: Normalización de encabezados
-
+def normalizar_columnas(df):
+    nuevas_columnas = []
+    for col in df.columns:
+        col_str = str(col).lower().strip().replace(" ", "_")
+        col_str = unidecode(col_str)
+        nuevas_columnas.append(col_str)
+    df.columns = nuevas_columnas
+    return df
 
 # 🛠️ FUNCIÓN: Carga de Excel con detección de múltiples hojas y CONTPAQi
 def detectar_y_cargar_archivo(archivo):
@@ -66,6 +71,10 @@ def detectar_y_cargar_archivo(archivo):
             hoja = st.sidebar.selectbox("📄 Selecciona la hoja a leer", hojas)
 
         df = pd.read_excel(xls, sheet_name=hoja)
+        df = normalizar_columnas(df)
+
+        with st.expander("🛠️ Debug - Columnas leídas desde X AGENTE"):
+            st.write(df.columns.tolist())
 
         # Generación virtual de columnas año y mes para X AGENTE
         if hoja == "X AGENTE":
