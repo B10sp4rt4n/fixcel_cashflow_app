@@ -4,6 +4,8 @@ import os
 from typing import Dict, List, Tuple, Optional
 import pandas as pd
 from unidecode import unidecode
+# Al principio de main/heatmap_ventas.py
+from .utils import normalize_columns
 
 # ---- Fuzzy (opcional) --------------------------------------------------------
 try:
