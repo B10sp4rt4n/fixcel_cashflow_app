@@ -7,12 +7,13 @@ import matplotlib.pyplot as plt
 from unidecode import unidecode
 
 # --- IMPORTACIONES CORREGIDAS ---
-from main import main_kpi
-from main import main_comparativo
-from main import heatmap_ventas
-from main import kpi_engine
-from main import schema_mapper # Usando el nombre corregido
-from main.kpi_engine import compute_kpi_cpc
+# Este es el contenido para el archivo main/__init__.py
+
+from . import main_kpi
+from . import main_comparativo
+from . import heatmap_ventas
+from . import kpi_engine
+from . import schema_maper 
 
 # 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
 empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
