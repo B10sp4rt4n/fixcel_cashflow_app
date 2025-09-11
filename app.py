@@ -1,4 +1,4 @@
-# En tu archivo app.py
+# app.py
 
 import pandas as pd
 import networkx as nx
@@ -6,35 +6,14 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
 
-# --- IMPORTACIONES CORREGIDAS ---
-# Este es el contenido para el archivo main/__init__.py
-
-# --- IMPORTACIONES CORRECTAS ---
+# --- Módulos de la Aplicación ---
 from main import main_kpi
 from main import main_comparativo
 from main import heatmap_ventas
 from main import kpi_engine
-from main import schema_maper
-# Al principio de app.py
+from main import schema_maper # O schema_mapper si lo renombras
+from main import kpi_cpc
 from main.utils import normalizar_columnas
-
-# 1) Subir archivo + elegir empresa (puede ser un selectbox o input)
-empresa = st.sidebar.text_input("Empresa / Perfil", value="default")
-archivo = st.sidebar.file_uploader("Sube Excel o CSV", type=["xlsx", "csv"], key="uploader_main")
-
-if archivo:
-    df_can, meta = schema_maper.run_mapping_pipeline(archivo, empresa=empresa)
-    with st.expander("Diagnóstico de mapeo"):
-        st.write(meta)
-        st.dataframe(df_can.head())
-
-    # 2) Calcular KPIs disponible
-    results, report = kpi_engine.compute_kpis(df_can)
-    st.subheader("KPIs disponibles")
-    st.write(results)
-    st.subheader("Estado por KPI")
-    st.dataframe(report)
-
 
 # ETL UI (gracia si aún no lo has copiado)
 try:
@@ -66,10 +45,6 @@ def detectar_y_cargar_archivo(archivo):
             hoja = st.sidebar.selectbox("📄 Selecciona la hoja a leer", hojas)
 
         df = pd.read_excel(xls, sheet_name=hoja)
-        df = normalizar_columnas(df)
-
-        with st.expander("🛠️ Debug - Columnas leídas desde X AGENTE"):
-            st.write(df.columns.tolist())
 
         # Generación virtual de columnas año y mes para X AGENTE
         if hoja == "X AGENTE":
