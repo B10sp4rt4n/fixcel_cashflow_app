@@ -9,29 +9,20 @@ from relaciones import verificar_relaciones, mostrar_alertas
 import pandas as pd
 import streamlit as st
 
+
 # Cargar el archivo Excel
 archivo_inicial = st.file_uploader("Cargar archivo completo de datos")
 
 if archivo_inicial is not None:
-    # Leer la pestaña 'X Agente' del archivo Excel
-    df_inicial = pd.read_excel(archivo_inicial, sheet_name="X Agente")  # Especificamos el nombre de la pestaña
+    # Leer las hojas del archivo Excel
+    xls = pd.ExcelFile(archivo_inicial)
     
-    # Verificar las columnas
-    st.write("Columnas del archivo:", df_inicial.columns)
+    # Mostrar todas las hojas disponibles en el archivo Excel
+    st.write("Hojas disponibles:", xls.sheet_names)
     
-    # Mostrar las primeras filas para ver el contenido
+    # Cargar la pestaña específica (si la conoces)
+    df_inicial = pd.read_excel(xls, sheet_name="X Agente")  # O ajusta según el nombre de la hoja correcta
     st.write("Primeras filas del archivo cargado:", df_inicial.head())
-    
-    # Verificar si la columna 'mes' está presente
-    if 'mes' not in df_inicial.columns:
-        st.error("La columna 'mes' no está presente en la pestaña 'X Agente'.")
-    else:
-        st.success("La columna 'mes' está presente en la pestaña 'X Agente'.")
-        
-    # Procesar los datos según sea necesario
-    cargar_datos_iniciales(df_inicial)
-    st.success("Datos cargados exitosamente.")
-
 
 
 st.set_page_config(page_title="FixCel - Dashboard de Flujo de Caja", layout="wide")
