@@ -9,4 +9,5 @@ pandas
 pyyaml
 rapidfuzz
 seaborn
-
+altair
+  
