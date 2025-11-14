@@ -10,4 +10,5 @@ pyyaml
 rapidfuzz
 seaborn
 altair
+xlsxwriter
   
