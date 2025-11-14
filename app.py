@@ -22,9 +22,36 @@ archivo = st.sidebar.file_uploader("Sube Excel o CSV", type=["xlsx", "csv"], key
 
 if archivo:
     df_can, meta = schema_maper.run_mapping_pipeline(archivo, empresa=empresa)
+
     with st.expander("Diagnóstico de mapeo"):
         st.write(meta)
         st.dataframe(df_can.head())
+
+        # Diagnóstico de columnas
+        columnas_detectadas = set(df_can.columns)
+        columnas_canónicas = set([
+            "fecha", "año", "mes", "cliente_id", "cliente_nombre",
+            "agente", "producto", "cantidad", "importe", "moneda"
+        ])
+        columnas_faltantes = columnas_canónicas - columnas_detectadas
+        st.markdown(f"**Columnas detectadas:** {', '.join(columnas_detectadas)}")
+        if columnas_faltantes:
+            st.warning(f"Columnas faltantes: {', '.join(columnas_faltantes)}")
+        else:
+            st.success("Todas las columnas canónicas están presentes.")
+
+        # Sugerencias de mapeo
+        from main.schema_maper import DEFAULT_SYNONYMS
+        sugerencias = {}
+        for canonica, sinonimos in DEFAULT_SYNONYMS.items():
+            for s in sinonimos:
+                for col in df_can.columns:
+                    if s == col or s in col:
+                        sugerencias[canonica] = col
+        if sugerencias:
+            st.markdown("**Sugerencias de mapeo:**")
+            for canonica, sugerida in sugerencias.items():
+                st.write(f"{canonica} ⟶ {sugerida}")
 
     # 2) Calcular KPIs disponible
     results, report = kpi_engine.compute_kpis(df_can)
