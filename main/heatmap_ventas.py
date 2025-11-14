@@ -13,6 +13,24 @@ from . import kpi_engine
 from . import schema_maper 
 from .utils import normalizar_columnas
 
+# Utilidad para detectar la columna más parecida
+def detectar_columna(df, posibles):
+    # Coincidencia exacta
+    for nombre in posibles:
+        if nombre in df.columns:
+            return nombre
+    # Coincidencia parcial
+    for nombre in posibles:
+        for col in df.columns:
+            if nombre in col:
+                return col
+    # Coincidencia por similitud básica
+    for nombre in posibles:
+        for col in df.columns:
+            if nombre.replace('_', '') in col.replace('_', ''):
+                return col
+    return None
+
 def run(df):   
 
     st.title("📊 Heatmap de Ventas (Entrada Genérica)")
