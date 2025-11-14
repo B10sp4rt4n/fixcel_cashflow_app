@@ -189,8 +189,18 @@ elif menu == "🔥 Heatmap Ventas":
         st.warning("⚠️ Primero sube un archivo para visualizar el Heatmap.")
 
 elif menu == "💳 KPI Cartera CxC":
-    if "archivo_excel" in st.session_state:
-        kpi_cpc.run(st.session_state["archivo_excel"])
+    if "df" in st.session_state:
+        st.subheader("💳 KPI Cartera por Cobrar")
+        try:
+            results, report = kpi_engine.compute_kpis(st.session_state["df"])
+            if "kpi_cpc" in results:
+                st.metric("Cartera por Cobrar", f"${results['kpi_cpc']:,.2f}")
+            else:
+                st.warning("⚠️ No se pudo calcular el KPI de Cartera por Cobrar. Verifica que el archivo tenga las columnas requeridas.")
+            with st.expander("📊 Detalles del cálculo"):
+                st.dataframe(report)
+        except Exception as e:
+            st.error(f"❌ Error al calcular KPIs: {e}")
     else:
         st.warning("⚠️ Primero sube un archivo para visualizar CXC.")
 
