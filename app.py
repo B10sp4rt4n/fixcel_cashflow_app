@@ -194,7 +194,10 @@ elif menu == "💳 KPI Cartera CxC":
         try:
             results, report = kpi_engine.compute_kpis(st.session_state["df"])
             if "kpi_cpc" in results:
-                st.metric("Cartera por Cobrar", f"${results['kpi_cpc']:,.2f}")
+                if results['kpi_cpc'] is not None:
+                    st.metric("Cartera por Cobrar", f"${results['kpi_cpc']:,.2f}")
+                else:
+                    st.warning("⚠️ El KPI de Cartera por Cobrar no tiene datos válidos para mostrar.")
             else:
                 st.warning("⚠️ No se pudo calcular el KPI de Cartera por Cobrar. Verifica que el archivo tenga las columnas requeridas.")
             with st.expander("📊 Detalles del cálculo"):
