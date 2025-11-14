@@ -5,6 +5,7 @@ import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
 from unidecode import unidecode
+import seaborn as sns
 
 # --- IMPORTACIONES CORREGIDAS PARA LA NUEVA ESTRUCTURA ---
 
